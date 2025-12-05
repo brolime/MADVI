@@ -1,0 +1,1 @@
+{"bitfile_name": "/home/xilinx/finn-tfc-demo/resizer.bit", "active_name": "Pynq-Z2", "timestamp": "2025/11/28 22:8:50 +824075", "bitfile_hash": "4f8412781c367a1f2e0f5417f3b42425f92cd3b8", "shutdown_ips": {}, "psddr": {"raw_type": 1, "used": 1, "base_address": 0, "size": 268435456, "type": "DDR4", "streaming": false, "idx": 0, "tag": "PSDDR"}}
