@@ -1,0 +1,33 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:13:54 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Mon Jan  5 18:45:20 2026
+# Process ID: 1866554
+# Current directory: /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_
+# Command line: vivado -mode batch -source /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/ip_config.tcl
+# Log file: /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/vivado.log
+# Journal file: /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/vivado.jou
+# Running On: n3-24-136.dhcp.drexel.edu, OS: Linux, CPU Frequency: 799.407 MHz, CPU Physical cores: 16, Host memory: 33328 MB
+#-----------------------------------------------------------
+source /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/ip_config.tcl
+# set FREQ_MHZ 200
+# set NUM_AXILITE 2
+# if {$NUM_AXILITE > 9} {
+#     error "Maximum 10 AXI-Lite interfaces supported"
+# }
+# set NUM_AXIMM 2
+# set BOARD Pynq-Z2
+# set FPGA_PART xc7z020clg400-1
+# create_project finn_zynq_link ./ -part $FPGA_PART
+ERROR: [Common 17-53] User Exception: Project already exists on disk, please use '-force' option to overwrite: 
+     /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/finn_zynq_link.xpr
+     /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/finn_zynq_link.runs
+     /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/finn_zynq_link.srcs
+     /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/finn_zynq_link.sim
+     /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/finn_zynq_link.cache
+     /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/finn_zynq_link.hw
+     /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/finn_zynq_link.ip_user_files
+     /home/johncrespo/MADVI/fpga/vivado_zynq_proj_9n5w7zv_/finn_zynq_link.gen
+INFO: [Common 17-206] Exiting Vivado at Mon Jan  5 18:45:22 2026...

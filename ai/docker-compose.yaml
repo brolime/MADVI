@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  finn-vivado:
+    image: finn_letters:letters_v1
+    container_name: zen_fermi_letters
+    stdin_open: true
+    tty: true
+    privileged: true
+
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tools/Xilinx:/tools/Xilinx:rw
+      - ${HOME}:${HOME}
+
+    working_dir: ${HOME}
+
+    command: >
+      bash -c "
+      apt update &&
+      apt install -y
+        libxtst6
+        libxi6
+        libxrender1
+        libxrandr2
+        libxinerama1
+        libxcursor1
+        libxcomposite1
+        libxdamage1
+        libxfixes3
+        libgtk-3-0
+        libnss3
+        libasound2 &&
+      echo 'Vivado X11 deps installed' &&
+      exec bash
+      "

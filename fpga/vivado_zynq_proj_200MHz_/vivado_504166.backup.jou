@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:13:54 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Mon Jan  5 02:14:41 2026
+# Process ID: 504166
+# Current directory: /tmp/finn_dev_root/vivado_zynq_proj_9n5w7zv_
+# Command line: vivado -mode batch -source /tmp/finn_dev_root/vivado_zynq_proj_9n5w7zv_/ip_config.tcl
+# Log file: /tmp/finn_dev_root/vivado_zynq_proj_9n5w7zv_/vivado.log
+# Journal file: /tmp/finn_dev_root/vivado_zynq_proj_9n5w7zv_/vivado.jou
+# Running On: dbdbdb1ac303, OS: Linux, CPU Frequency: 936.310 MHz, CPU Physical cores: 16, Host memory: 33328 MB
+#-----------------------------------------------------------
+source /tmp/finn_dev_root/vivado_zynq_proj_9n5w7zv_/ip_config.tcl
