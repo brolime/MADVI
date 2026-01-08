@@ -6,7 +6,7 @@ import time  # added by EH 12-23-25
 
 # ---------------- CONFIG ----------------
 CAMERA_INDEX = 0      # Using external camera 2
-INPUT_W, INPUT_H = 640, 640  # EAST input size (must be multiple of 32)
+INPUT_W, INPUT_H = 480, 480  # EAST input size (must be multiple of 32)
 PAD_X, PAD_Y = 3, 3   # Padding around word boxes
 SCALE = 1.05          # Scale factor for box enlargement
 LETTER_CROP_FOLDER = "letter_crops"
@@ -30,8 +30,8 @@ layerNames = ["feature_fusion/Conv_7/Sigmoid", "feature_fusion/concat_3"]
 cap = cv2.VideoCapture(CAMERA_INDEX)
 
 # Set desired resolution
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1920)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 # Get current resolution
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -127,6 +127,7 @@ boxes_saved = False                    # added by EH 12-23-25
 
 # --- Main loop ---
 try:
+    start_time = time.perf_counter()
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -241,6 +242,9 @@ try:
                 f"saved {letters_saved_this_frame} letters this frame "
                 f"(total {letter_count})."
             )
+            end_time = time.perf_counter()
+            total_time = end_time - start_time
+            print(f"Script execution time: {total_time:.4f} seconds")
             break  # added by EH 12-23-25 this makes the script run only once and then exit
 
         elif key == ord('q'):
