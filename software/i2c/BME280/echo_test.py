@@ -3,7 +3,7 @@
 import argparse
 import time
 from pynq import Overlay
-from pynq.lib import i2c
+from pynq.lib.iic import AxiIIC
 
 # -----------------------------
 # BME280 Constants
@@ -41,7 +41,8 @@ print("[OK] Bitstream loaded")
 # Initialize I2C
 # -----------------------------
 print(f"[INFO] Opening I2C bus {args.i2c}")
-i2c_bus = i2c.I2C(args.i2c)
+print(ol.ip_dict)
+i2c_bus = AxiIIC(ol.ip_dict["axi_iic_0"])
 
 # -----------------------------
 # Helper functions
