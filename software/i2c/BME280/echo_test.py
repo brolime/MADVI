@@ -60,11 +60,11 @@ def i2c_write_reg(bus, addr, reg, value):
 # Test sequence
 # -----------------------------
 print("[INFO] Reading original CTRL_HUM register")
-orig_val = i2c_read_reg(i2c_bus, BME280_ADDR, REG_CTRL_HUM)
-print(f"  Original value: 0x{orig_val:02X}")
+rx_data = i2c_read_reg(i2c_bus, BME280_ADDR, REG_CTRL_HUM , rx_data)
+print(f"  Original value: 0x{rx_data:02X}")
 
 # Write a new value (valid values: 0x00–0x07)
-test_val = [(orig_val + 1) & 0x07]
+test_val = [(rx_data + 1) & 0x07]
 print(f"[INFO] Writing test value: 0x{test_val:02X}")
 i2c_write_reg(i2c_bus, BME280_ADDR, REG_CTRL_HUM, test_val)
 
