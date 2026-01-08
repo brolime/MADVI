@@ -80,6 +80,8 @@ read_data = []
 i2c_bus.send(0x77,iic_data,len(iic_data),1)
 i2c_bus.receive(0x77,rx_data,2,0)
 
+print(rx_data)
+
 
 # -----------------------------
 # Verify
