@@ -23,9 +23,13 @@ for i in range(5):
         cap_test.release()
 
 # Load EAST model
+read_nn_start_time = time.perf_counter()
 net = cv2.dnn.readNet("frozen_east_text_detection.pb")
 layerNames = ["feature_fusion/Conv_7/Sigmoid", "feature_fusion/concat_3"]
+read_nn_stop_time = time.perf_counter()
 
+
+camera_init_start_time = time.perf_counter()
 # Initialize camera
 cap = cv2.VideoCapture(CAMERA_INDEX)
 
@@ -37,7 +41,7 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 print(f"Current camera resolution: {width} x {height}")
-
+camera_init_stop_time = time.perf_counter()
 last_boxes = []
 
 # --- Cleanup function ---
@@ -138,7 +142,7 @@ try:
         # Headless testing: always run detection (space pressed)
         key = ord(' ')  # Simulate pressing the spacebar for testing purposes
 
-        if key == ord(' '):
+        if 1 == 1:
             # --- Enhance contrast for EAST input ---
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
@@ -147,6 +151,7 @@ try:
             # Convert back to BGR for EAST input
             frame_enhanced = cv2.cvtColor(gray_enhanced, cv2.COLOR_GRAY2BGR)
 
+            resize_start_time = time.perf_counter()
             # Resize for EAST input
             frame_resized = cv2.resize(frame_enhanced, (INPUT_W, INPUT_H))
             blob = cv2.dnn.blobFromImage(
@@ -154,11 +159,18 @@ try:
                 (123.68, 116.78, 103.94), swapRB=True, crop=False
             )
             net.setInput(blob)
+            resize_stop_time = time.perf_counter()
+            
+            forward_start_time = time.perf_counter()
             scores, geometry = net.forward(layerNames)
+            forward_stop_time = time.perf_counter()
+
 
             # --- Decode EAST predictions (safe rects) ---
+            decode_start_time = time.perf_counter()
             detections, confidences = decode_predictions(scores, geometry)
-
+            decode_stop_time = time.perf_counter()
+            
             rects = []
             conf2 = []
             for (sx, sy, ex, ey), c in zip(detections, confidences):
@@ -243,8 +255,20 @@ try:
                 f"(total {letter_count})."
             )
             end_time = time.perf_counter()
+            total_read_time = read_nn_stop_time - read_nn_start_time
+            total_camera_init_time = camera_init_stop_time - camera_init_start_time
+            total_resize_time = resize_stop_time - resize_start_time
+            total_forward_time = forward_stop_time - forward_start_time
+            total_decode_time = decode_stop_time - decode_start_time
             total_time = end_time - start_time
-            print(f"Script execution time: {total_time:.4f} seconds")
+
+            print(f"Script execution total_read_time: {total_read_time:.4f} seconds")
+            print(f"Script execution total_camera_init_time: {total_camera_init_time:.4f} seconds")
+            print(f"Script execution total_resize_time: {total_resize_time:.4f} seconds")
+            print(f"Script execution total_forward_time: {total_forward_time:.4f} seconds")
+            print(f"Script execution total_decode_time: {total_decode_time:.4f} seconds")
+            print(f"Script execution total_time: {total_time:.4f} seconds")
+
             break  # added by EH 12-23-25 this makes the script run only once and then exit
 
         elif key == ord('q'):
