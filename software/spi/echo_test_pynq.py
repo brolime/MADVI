@@ -17,7 +17,6 @@ bitfile_path = sys.argv[1]
 print(f"Loading bitstream from: {bitfile_path}")
 ol = Overlay(bitfile_path)
 
-print(ol.ip_dict)
 s = ol.axi_quad_spi_0
 print(s)
 
