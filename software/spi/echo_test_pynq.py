@@ -33,12 +33,13 @@ print(np.binary_repr(val))
 s.write(0x70,0b1111_1110) #write teh lowest slave low (Active low so this one gets turned on.)
 val = s.read(0x70)
 print("SSelect: ")
+print(np.binary_repr(val))
 
 # -----------------------------
 # Memory-mapped registers
 # -----------------------------
 # Let's assume the AXI IP is at this base address
-spi_mmio = MMIO(0x40000000, 0x1000)  # adjust if different
+spi_mmio = MMIO(0x41E00000, 0x1000)  # adjust if different
 
 # Register offsets
 READY_REG = 0x00   # ready flag from slave
