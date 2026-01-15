@@ -1,69 +1,67 @@
-#MASTER SPI INTERFACE
-# echo_test_pynq.py
+# mmio_interactive.py
 import sys
-import time
 from pynq import Overlay, MMIO
 import numpy as np
 
 # -----------------------------
-# Command-line argument parsing
+# Check for bitfile argument
 # -----------------------------
 if len(sys.argv) != 2:
     print(f"Usage: python3 {sys.argv[0]} <path_to_bitfile>")
     sys.exit(1)
 
 bitfile_path = sys.argv[1]
-
-print(f"Loading bitstream from: {bitfile_path}")
+print(f"Loading bitstream: {bitfile_path}")
 ol = Overlay(bitfile_path)
 
-s = ol.axi_quad_spi_0
-print(s)
-
-val = s.read(0x60)
-print("Initial Register Setup: ")
-print(np.binary_repr(val))
-print(np.binary_repr(val))
-s.write(0x60,0b00_00011110)
-val = s.read(0x60)
-print("Setup Now: ")
-print(np.binary_repr(val))
-#select device 0
-s.write(0x70,0b1111_1110) #write teh lowest slave low (Active low so this one gets turned on.)
-val = s.read(0x70)
-print("SSelect: ")
-print(np.binary_repr(val))
-
 # -----------------------------
-# Memory-mapped registers
-# -----------------------------
-# Let's assume the AXI IP is at this base address
-spi_mmio = MMIO(0x41E00000, 0x1000)  # adjust if different
-
-# Register offsets
-READY_REG = 0x00   # ready flag from slave
-BUFFER_REG = 0x04  # data register
-BUFFER_LEN = 8     # number of 32-bit words in buffer
-
-print("PYNQ SPI Master starting...")
-
-# -----------------------------
-# Poll READY_REG until 1
+# Interactive setup
 # -----------------------------
 while True:
-    ready = spi_mmio.read(READY_REG)
-    if ready == 1:
-        print("Slave ready! Reading buffer...")
-        data = []
-        for i in range(BUFFER_LEN):
-            val = spi_mmio.read(BUFFER_REG + i*4)
-            data.append(val)
-        print("Data read from slave:", data)
-
-        # Clear ready flag
-        spi_mmio.write(READY_REG, 0)
+    try:
+        mmio_base = input("Enter MMIO base address (hex, e.g., 0x40000000): ").strip()
+        mmio_base = int(mmio_base, 16)
+        mmio_range = input("Enter MMIO range (hex, e.g., 0x1000): ").strip()
+        mmio_range = int(mmio_range, 16)
         break
-    time.sleep(0.01)  # small delay to avoid busy wait
+    except ValueError:
+        print("Invalid hex value. Please try again.")
 
-print("PYNQ Master done.")
+mmio = MMIO(mmio_base, mmio_range)
+print(f"MMIO initialized: base=0x{mmio_base:X}, range=0x{mmio_range:X}\n")
 
+# -----------------------------
+# Interactive read/write loop
+# -----------------------------
+while True:
+    action = input("Enter action (read/write/exit): ").strip().lower()
+    if action == "exit":
+        print("Exiting program.")
+        break
+    elif action not in ["read", "write"]:
+        print("Invalid action. Please enter 'read', 'write', or 'exit'.")
+        continue
+
+    try:
+        reg_offset = input("Enter register offset (hex, e.g., 0x04): ").strip()
+        reg_offset = int(reg_offset, 16)
+
+        if action == "write":
+            value = input("Enter value to write (hex, e.g., 0x12345678): ").strip()
+            value = int(value, 16)
+            mmio.write(reg_offset, value)
+            print(f"Wrote 0x{value:08X} to register 0x{reg_offset:X}")
+            val = mmio.read(reg_offset)
+            print(f"Verify readback: 0x{val:08X}")
+            print("Binary:", np.binary_repr(val, width=32))
+        else:  # read
+            val = mmio.read(reg_offset)
+            print(f"Read 0x{val:08X} from register 0x{reg_offset:X}")
+            print("Binary:", np.binary_repr(val, width=32))
+
+        print("-" * 40)
+
+    except ValueError:
+        print("Invalid hex input. Try again.")
+    except Exception as e:
+        print(f"Error during MMIO access: {e}")
