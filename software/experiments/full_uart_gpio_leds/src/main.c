@@ -10,9 +10,7 @@
 
 // Buttons
 #define FWD_BUTTON_GPIO     GPIO_NUM_4
-#define BACK_BUTTON_GPIO    GPIO_NUM_5
-// #define RESET_BUTTON_GPIO   GPIO_NUM_18
-#define RESCAN_BUTTON_GPIO  GPIO_NUM_17
+#define BACK_BUTTON_GPIO    GPIO_NUM_18
 
 // LED GPIOs
 // Braille cell 1 GPIOs
@@ -43,9 +41,10 @@
 #define LED_19_GPIO        GPIO_NUM_6
 #define LED_20_GPIO        GPIO_NUM_7
 #define LED_21_GPIO        GPIO_NUM_14
-#define LED_22_GPIO        GPIO_NUM_19
-#define LED_23_GPIO        GPIO_NUM_26
-#define LED_24_GPIO        GPIO_NUM_18
+#define LED_22_GPIO        GPIO_NUM_17
+#define LED_23_GPIO        GPIO_NUM_5
+#define LED_24_GPIO        GPIO_NUM_19
+
 
 // Braille cell 5 GPIOs
 #define LED_25_GPIO        GPIO_NUM_8
@@ -107,6 +106,8 @@ static bool display_cleared = false;
 static bool rescan_waiting = false;
 static int64_t rescan_start_time = 0;
 #define RESCAN_TIMEOUT_MS 30000
+
+#define LONG_PRESS_MS 1000
 
 // 6-dot Braille mapping
 // 1  4
@@ -329,88 +330,125 @@ static void button_task(void *arg)
 {
     int last_fwd = 1;
     int last_back = 1;
-    // int last_reset = 1;
-    int last_rescan = 1;
+
+    int64_t fwd_press_time = 0;
+    int64_t back_press_time = 0;
 
     while (1) {
 
         int fwd = gpio_get_level(FWD_BUTTON_GPIO);
         int back = gpio_get_level(BACK_BUTTON_GPIO);
-        // int reset = gpio_get_level(RESET_BUTTON_GPIO);
-        int rescan = gpio_get_level(RESCAN_BUTTON_GPIO);
 
-        // Forward
+        // Forward button
+        // Pressed
         if (last_fwd == 1 && fwd == 0) {
+            fwd_press_time = esp_timer_get_time() / 1000;
+        }
 
-            if (history_len == 0) {
-                ESP_LOGW(TAG, "HISTORY EMPTY");
+        // Released
+        if (last_fwd == 0 && fwd == 1) {
+
+            int64_t press_len =
+                (esp_timer_get_time() / 1000) - fwd_press_time;
+
+            // Long Press = Rescan
+            if (press_len >= LONG_PRESS_MS) {
+
+                ESP_LOGI(TAG, "FORWARD LONG PRESS -> RESCAN");
+
+                reset_system();
+
+                send_rescan_request();
+
+                rescan_start_time =
+                    esp_timer_get_time() / 1000;
+
+                rescan_waiting = true;
             }
-            else if (current_pos + 5 < history_len) {
-                current_pos += 5;
-                display_five(current_pos);
-                display_cleared = false;
-            }
+
+            // Short Press = Forward
             else {
-                ESP_LOGW(TAG, "END OF HISTORY");
+
+                ESP_LOGI(TAG, "FORWARD SHORT PRESS");
+
+                if (history_len == 0) {
+                    ESP_LOGW(TAG, "HISTORY EMPTY");
+                }
+                else if (current_pos + 5 < history_len) {
+
+                    current_pos += 5;
+
+                    display_five(current_pos);
+
+                    display_cleared = false;
+                }
+                else {
+                    ESP_LOGW(TAG, "END OF HISTORY");
+                }
             }
 
             vTaskDelay(pdMS_TO_TICKS(200));
         }
 
-        // Back
+        // Back button
+        // Pressed
         if (last_back == 1 && back == 0) {
-
-            if (history_len == 0) {
-                ESP_LOGW(TAG, "HISTORY EMPTY");
-            }
-            else if (current_pos - 5 >= 0) {
-                current_pos -= 5;
-                display_five(current_pos);
-                display_cleared = false;
-            }
-            else {
-                ESP_LOGW(TAG, "BEGINNING OF HISTORY");
-            }
-
-            vTaskDelay(pdMS_TO_TICKS(200));
+            back_press_time = esp_timer_get_time() / 1000;
         }
 
-        // // Reset
-        // if (last_reset == 1 && reset == 0) {
+        // Released
+        if (last_back == 0 && back == 1) {
 
-        //     if (!display_cleared) {
-        //         clear_display();
-        //         display_cleared = true;
-        //         ESP_LOGI(TAG, "CLEARED");
-        //     } else {
-        //         display_five(current_pos);
-        //         display_cleared = false;
-        //         ESP_LOGI(TAG, "RESTORED");
-        //     }
+            int64_t press_len =
+                (esp_timer_get_time() / 1000) - back_press_time;
 
-        //     vTaskDelay(pdMS_TO_TICKS(200));
-        // }
+            // Long Press = Clear / Restore Display Toggle
+            if (press_len >= LONG_PRESS_MS) {
 
-        // Rescan
-        if (last_rescan == 1 && rescan == 0) {
+                if (!display_cleared) {
 
-            ESP_LOGI(TAG, "RESCAN TRIGGERED");
+                    clear_display();
 
-            reset_system();
+                    display_cleared = true;
 
-            ESP_LOGI(TAG, "SENDING UART RESCAN");
-            send_rescan_request();
+                    ESP_LOGI(TAG, "DISPLAY CLEARED");
+                }
+                else {
 
-            rescan_start_time = esp_timer_get_time() / 1000;
-            rescan_waiting = true;
+                    display_five(current_pos);
+
+                    display_cleared = false;
+
+                    ESP_LOGI(TAG, "DISPLAY RESTORED");
+                }
+            }
+
+            // Short Press = Back
+            else {
+
+                ESP_LOGI(TAG, "BACK SHORT PRESS");
+
+                if (history_len == 0) {
+                    ESP_LOGW(TAG, "HISTORY EMPTY");
+                }
+                else if (current_pos - 5 >= 0) {
+
+                    current_pos -= 5;
+
+                    display_five(current_pos);
+
+                    display_cleared = false;
+                }
+                else {
+                    ESP_LOGW(TAG, "BEGINNING OF HISTORY");
+                }
+            }
 
             vTaskDelay(pdMS_TO_TICKS(200));
         }
 
         last_fwd = fwd;
         last_back = back;
-        // last_reset = reset;
-        last_rescan = rescan;
 
         vTaskDelay(pdMS_TO_TICKS(10));
     }
@@ -427,9 +465,7 @@ void app_main(void)
     gpio_config_t btn = {
         .pin_bit_mask =
             (1ULL << FWD_BUTTON_GPIO) |
-            (1ULL << BACK_BUTTON_GPIO) |
-            // (1ULL << RESET_BUTTON_GPIO) |
-            (1ULL << RESCAN_BUTTON_GPIO),
+            (1ULL << BACK_BUTTON_GPIO),
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_ENABLE
     };
